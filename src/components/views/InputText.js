@@ -47,7 +47,7 @@ export default class InputText extends PureComponent {
         const localLabelStyle = {
             position: 'absolute',
             left: 1,
-            top: (isFocused || hasText) ? 0 : (constants.IS_IOS ? 14 : 30),
+            top: (isFocused || hasText) ? 0 : (constants.IS_IOS ? 14 : 14),
             fontSize: (isFocused || hasText) ? 14 : 20,
             color: error !== "" ? errorColor : (isFocused ? focusColor : color),
         };
@@ -65,7 +65,7 @@ export default class InputText extends PureComponent {
                     editable={editable}
                     placeholder={label}
                     placeholderTextColor="transparent"
-                    style={{ fontSize: 20, includeFontPadding: false, color: textColor, paddingLeft: 2, margin: 0, borderBottomWidth: 1, borderRadius: 5, borderBottomColor: isFocused ? focusColor : color }}
+                    style={{ fontSize: 20, includeFontPadding: false, color: textColor, paddingLeft: 2, paddingVertical:0, margin: 0, borderBottomWidth: 1, borderRadius: 5, borderBottomColor: isFocused ? focusColor : color }}
                     onFocus={this.handleFocus}
                     onBlur={this.handleBlur}
                 />

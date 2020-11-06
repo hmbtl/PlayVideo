@@ -15,11 +15,10 @@ import {
     RegisterScreen,
     TagsScreen,
     TestScreen,
-    ProfileScreen,
-    VideosScreen,
     CollectionScreen,
     BookmarkScreen,
-    ListScreen,
+    WatchedVideosScreen,
+    LikedVideosScreen,
     SearchScreen,
     MenuScreen
 } from "@screens";
@@ -33,7 +32,6 @@ const navigationOptions = {
 const HomeStack = createStackNavigator(
     {
         Home: HomeScreen,
-        List: ListScreen
     },
     {
         initialRouteName: "Home",
@@ -44,7 +42,6 @@ const HomeStack = createStackNavigator(
 const BookmarkStack = createStackNavigator(
     {
         Bookmark: BookmarkScreen,
-        List: ListScreen,
         Collection: CollectionScreen,
     },
     {
@@ -58,7 +55,8 @@ const BookmarkStack = createStackNavigator(
 const MenuStack = createStackNavigator(
     {
         Menu: MenuScreen,
-        Video: VideosScreen,
+        LikedVideos: LikedVideosScreen,
+        WatchedVideos: WatchedVideosScreen,
     },
     {
         initialRouteName: "Menu",

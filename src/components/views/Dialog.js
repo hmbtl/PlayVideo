@@ -13,6 +13,7 @@ export default class Dialog extends Component {
             <Modal
                 animationType="fade"
                 transparent={true}
+                statusBarTranslucent={true}
                 {...otherProps}
             >
                 <TouchableWithoutFeedback
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     bodyContainer: {
-        width: scale(250),
+        width: constants.screenWidth - 60,
         borderRadius: 10,
         backgroundColor: "white"
     },

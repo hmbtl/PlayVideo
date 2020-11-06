@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
-import { Text, SafeAreaView, StyleSheet, View, TouchableHighlight, Image, TextInput } from 'react-native'
+import { Text, SafeAreaView, StyleSheet, View, Image, } from 'react-native'
 import api from "@service/api"
 import Snackbar from 'react-native-snackbar';
-import { TextHeader, Button, Dialog, InputText, LoadingView } from "@component/views";
+import { TextHeader, Button, Dialog, InputText, LoadingView, MenuButton } from "@component/views";
 import { colors, constants, images } from "@config"
 import { verticalScale, scale } from 'react-native-size-matters';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -32,8 +32,6 @@ export default class MenuScreen extends Component {
         this.logout = this.logout.bind(this);
         this.changePassword = this.changePassword.bind(this);
         this.updateProfile = this.updateProfile.bind(this);
-        this.getLikedVideos = this.getLikedVideos.bind(this);
-        this.getWatchedVideos = this.getWatchedVideos.bind(this);
         this.showEditUserModal = this.showEditUserModal.bind(this);
     }
 
@@ -190,21 +188,6 @@ export default class MenuScreen extends Component {
     }
 
 
-    getLikedVideos() {
-
-        this.props.navigation.navigate("Video", {
-            content: "liked",
-        });
-
-    }
-
-    getWatchedVideos() {
-
-        this.props.navigation.navigate("Video", {
-            content: "watched",
-        });
-
-    }
 
 
     render() {
@@ -231,56 +214,15 @@ export default class MenuScreen extends Component {
                     style={{ height: 0.5, backgroundColor: colors.disabled, marginLeft: scale(20), marginRight: scale(20), marginTop: verticalScale(10), marginBottom: verticalScale(5) }}
 
                 />
-
-                <TouchableHighlight style={styles.buttonStyle}
-                    underlayColor={colors.primary}
-                    onPress={this.showEditUserModal}
-                >
-                    <View style={styles.buttonContainer}>
-
-                        <Text style={styles.buttonText}>
-                            Edit profile
-                        </Text>
-                        <Image
-                            style={styles.buttonImage}
-                            source={images.chevronRight}
-                        />
-                    </View>
-
-                </TouchableHighlight>
-
-
-                <TouchableHighlight style={styles.buttonStyle}
-                    underlayColor={colors.primary}
-                    onPress={() => { this.setState({ changePasswordModal: true }) }}
-                >
-                    <View style={styles.buttonContainer}>
-
-                        <Text style={styles.buttonText}>
-                            Change password
-                        </Text>
-                        <Image
-                            style={styles.buttonImage}
-                            source={images.chevronRight}
-
-                        />
-                    </View>
-
-                </TouchableHighlight>
-
-
-
-
+                <MenuButton onPress={this.showEditUserModal} text="Edit profile" />
+                <MenuButton text="Change password" onPress={() => { this.setState({ changePasswordModal: true }) }} />
 
                 <View style={styles.categoryContainer}>
                     <Image
                         style={styles.categoryImage}
                         source={images.video}
-
                     />
-                    <Text style={styles.categoryHeader}>
-                        Activity
-                        </Text>
+                    <Text style={styles.categoryHeader}>Activity</Text>
                 </View>
 
                 <View
@@ -288,42 +230,15 @@ export default class MenuScreen extends Component {
 
                 />
 
-                <TouchableHighlight style={styles.buttonStyle}
-                    underlayColor={colors.primary}
-                    onPress={this.getLikedVideos}
-                >
-                    <View style={styles.buttonContainer}>
+                <MenuButton
+                    onPress={() => { this.props.navigation.navigate("LikedVideos") }}
+                    text="Liked Videos"
+                />
 
-                        <Text style={styles.buttonText}>
-                            Liked videos
-                        </Text>
-                        <Image
-                            style={styles.buttonImage}
-                            source={images.chevronRight}
-
-                        />
-                    </View>
-
-                </TouchableHighlight>
-
-                <TouchableHighlight style={styles.buttonStyle}
-                    underlayColor={colors.primary}
-                    onPress={this.getWatchedVideos}
-                >
-                    <View style={styles.buttonContainer}>
-
-                        <Text style={styles.buttonText}>
-                            Watched videos
-                        </Text>
-                        <Image
-                            style={styles.buttonImage}
-                            source={images.chevronRight}
-
-                        />
-                    </View>
-
-                </TouchableHighlight>
-
+                <MenuButton
+                    text="Watched videos"
+                    onPress={() => { this.props.navigation.navigate("WatchedVideos") }}
+                />
 
 
                 <View
@@ -338,8 +253,6 @@ export default class MenuScreen extends Component {
                         underlayColor="#f5f5f5"
                         onPress={this.logout}
                         containerStyle={{ height: scale(35), width: verticalScale(200) }} />
-
-
                 </View>
 
 
@@ -353,7 +266,7 @@ export default class MenuScreen extends Component {
                 >
 
                     <View
-                        style={{ alignItems: "center", padding: 20 }}
+                        style={{ alignItems: "center", paddingLeft: 20, paddingRight: 20, paddingTop: 20, paddingBottom: 40 }}
                     >
 
                         <LoadingView
@@ -407,7 +320,7 @@ export default class MenuScreen extends Component {
                 >
 
                     <View
-                        style={{ alignItems: "center", padding: 20 }}
+                        style={{ alignItems: "center", paddingLeft: 20, paddingRight: 20, paddingTop: 20, paddingBottom: 40 }}
                     >
 
                         <InputText
@@ -421,9 +334,6 @@ export default class MenuScreen extends Component {
                             focusColor={colors.primary}
 
                         />
-                        <View
-                            style={{ height: 10 }}
-                        />
 
                         <InputText
                             label="New password"
@@ -436,9 +346,7 @@ export default class MenuScreen extends Component {
                             secureTextEntry={true}
                         />
 
-                        <View
-                            style={{ height: 10 }}
-                        />
+
 
                         <InputText
                             label="Re-type password"
@@ -480,28 +388,11 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "center"
     },
-    buttonStyle: {
-        height: 40,
-        justifyContent: "space-around",
-    },
-    buttonContainer: {
-        alignItems: "center",
-        flexDirection: "row",
-        justifyContent: "space-between",
-        paddingLeft: scale(30),
-        paddingRight: scale(20)
-    },
+
     categoryImage: {
         marginLeft: 10,
         marginRight: 5,
         tintColor: "#414141"
-    },
-    buttonImage: {
-        tintColor: "#414141"
-    },
-    buttonText: {
-        fontSize: constants.fonts.xsmall,
-        color: "#414141"
     },
     categoryHeader: {
         fontSize: constants.fonts.small

@@ -5,11 +5,11 @@ import TagsScreen from './TagsScreen'
 import TestScreen from "./TestScreen"
 import SearchScreen from "./SearchScreen"
 import ProfileScreen from "./ProfileScreen"
-import ListScreen from "./ListScreen"
 import BookmarkScreen from "./BookmarkScreen"
 import MenuScreen from "./MenuScreen"
 import CollectionScreen from "./CollectionScreen"
-import VideosScreen from "./VideosScreen"
+import WatchedVideosScreen from "./WatchedVideosScreen"
+import LikedVideosScreen from "./LikedVideosScreen"
 
 export {
   SplashScreen,
@@ -20,8 +20,8 @@ export {
   SearchScreen,
   ProfileScreen,
   BookmarkScreen,
-  ListScreen,
   MenuScreen,
   CollectionScreen,
-  VideosScreen
+  WatchedVideosScreen,
+  LikedVideosScreen
 };

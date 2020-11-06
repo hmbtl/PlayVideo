@@ -111,14 +111,14 @@ const styles = StyleSheet.create({
         height: this.width,
         //  width: width,
         borderRadius: 10,
-        shadowColor: 'black',
+       /* shadowColor: 'black',
         shadowOffset: {
             width: 1,
             height: 4,
         },
         shadowOpacity: 0.2,
         shadowRadius: 4,
-        elevation: 1
+        elevation: 1*/
     },
     textContainer: {
         padding: moderateScale(5),

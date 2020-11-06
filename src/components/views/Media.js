@@ -23,18 +23,15 @@ export default class Media extends PureComponent {
 
 
     componentDidMount() {
-        console.log(this.props.poster, "didMount")
     }
 
     onLoadStart() {
-        /*
         console.log(this.props.poster, "Load Start")
         if (!this.state.started) {
             this.setState({
                 status: "loading"
             })
         }
-        */
 
         if (this.props.onLoadStart) {
             this.props.onLoadStart();
@@ -42,7 +39,6 @@ export default class Media extends PureComponent {
     }
 
     onReadyForDisplay() {
-        /*
         if (!this.state.started) {
             this.setState({
                 started: true
@@ -53,7 +49,6 @@ export default class Media extends PureComponent {
             status: "started"
         })
 
-        */
 
         if (this.props.onReadyForDisplay) {
             this.props.onReadyForDisplay();
@@ -62,11 +57,9 @@ export default class Media extends PureComponent {
 
 
     onProgress(time) {
-        /*
         this.setState({
             duration: this.props.duration - time.currentTime
         })
-        */
 
         if (this.props.onProgress) {
             this.props.onProgress(time);
@@ -112,6 +105,7 @@ export default class Media extends PureComponent {
                 onReadyForDisplay={this.onReadyForDisplay}
                 onLoadStart={this.onLoadStart}
                 poster={poster}
+                controls={false}
                 onError={(error) => { console.log(error) }}
                 progressUpdateInterval={1000}
                 onProgress={this.onProgress}
@@ -124,8 +118,8 @@ export default class Media extends PureComponent {
 
 
         if (this.state.status == "stopped" && this.props.paused) {
-            //component = posterComponent;
-            component = videoComponent;
+            component = posterComponent;
+            //component = videoComponent;
             pauseImage = <Image style={styles.image} source={images.play} />
         }
 

@@ -127,7 +127,7 @@ export default class VideoContent extends PureComponent {
                                 style={{
                                     flexDirection: "row",
                                     position: "absolute",
-                                    backgroundColor: "#757575",
+                                    backgroundColor: "#414141aa",
                                     width: "100%",
                                     padding: 10,
                                     alignItems: "center",
@@ -194,6 +194,7 @@ export default class VideoContent extends PureComponent {
                                 image={images.watch}
                                 style={{ marginRight: verticalScale(10) }}
                                 imageFilled={images.watchFilled}
+                                disabled={true}
                                 selected={this.props.isWatched}
                             />
                             <View

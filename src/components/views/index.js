@@ -11,10 +11,12 @@ import SearchInput from "./SearchInput"
 import VideoTile from "./VideoTile"
 import CategoryTab from "./CategoryTab"
 import Dialog from "./Dialog"
+import MenuButton from "./MenuButton"
 
 export {
     Tag,
     CardView,
+    MenuButton,
     CategoryTab,
     Button,
     InputText,
