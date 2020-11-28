@@ -1,10 +1,10 @@
 import React, { Component } from 'react'
-import { Text, StyleSheet, View, FlatList, TouchableHighlight, SafeAreaView, Image } from 'react-native'
+import { Text, StyleSheet, View, FlatList, TouchableHighlight, SafeAreaView, Image, ActivityIndicator } from 'react-native'
 import { ButtonImage, TextHeader, LoadingView, Button, Dialog } from "@component/views";
 import api from "@service/api"
 import Snackbar from 'react-native-snackbar';
 import { colors, constants, images } from "@config"
-import { verticalScale, scale } from 'react-native-size-matters';
+import { scale } from 'react-native-size-matters';
 
 
 export default class CollectionScreen extends Component {
@@ -21,22 +21,62 @@ export default class CollectionScreen extends Component {
             collectionId: navigation.getParam("collection_id", 0),
             title: navigation.getParam("title", ""),
             showModal: false,
-            deleteButtonLoading: false
+            deleteButtonLoading: false,
+            isLoadingMore: false,
+            hasNext: false,
+            paging: {}
         }
 
         this.getCollectionVideo = this.getCollectionVideo.bind(this);
         this.deleteCollection = this.deleteCollection.bind(this);
-        this.onVideoPress = this.onVideoPress.bind(this);
-        this.onVideoLongPress = this.onVideoLongPress.bind(this);
-        console.log(this.state.collectionId)
+        this.loadMore = this.loadMore.bind(this);
     }
 
-    onVideoPress(index) {
-        console.log("Press:" + index)
-    }
 
-    onVideoLongPress(index) {
-        console.log("LongPress: " + index);
+    loadMore() {
+        if (!this.state.isLoadingMore) {
+            if ("next" in this.state.paging) {
+                this.setState({
+                    isLoadingMore: true
+                })
+
+                api.getCollectionVideo(this.state.collectionId, this.state.paging.next).then(data => {
+
+                    let videos = [];
+
+                    if (data.status == 'error') {
+                        Snackbar.show({
+                            text: 'Cannot show videos from collection. Try again later.',
+                        });
+                    } else {
+                        videos = data.data
+                    }
+
+                    //let videosArray = this.state.videos;
+                    //videosArray.push(videos);
+                    let arr = this.state.videos.slice();
+                    arr = arr.concat(videos)
+
+
+
+                    this.setState({
+                        videos: arr,
+                        paging: data.paging,
+                        isLoadingMore: false,
+                        hasNext: "next" in data.paging,
+                    })
+
+
+                }).catch(() => {
+                    Snackbar.show({
+                        text: 'Cannot show videos from collections. Try again later.',
+                    });
+
+                });
+            }
+        }
+
+
     }
 
     getCollectionVideo() {
@@ -56,10 +96,13 @@ export default class CollectionScreen extends Component {
                 videos = data.data;
             }
 
+
             this.setState({
                 isLoading: false,
                 isRefreshing: false,
-                videos: videos
+                videos: videos,
+                paging: data.paging,
+                hasNext: "next" in data.paging,
             })
 
         }).catch(() => {
@@ -109,26 +152,26 @@ export default class CollectionScreen extends Component {
     }
 
 
-    renderItem({ index, item }) {
-        return (
-            <TouchableHighlight
-                style={styles.imageContainer}
-                onPress={() => this.props.navigation.navigate("List", {
-                    videos: JSON.stringify(this.state.liked),
-                    index: index
-                })}
-                onLongPress={() => { console.log("long press", index) }}
-                underlayColor="#de1623"
-            >
-                <Image
-                    style={styles.image}
-                    resizeMode="cover"
-                    source={
-                        { uri: item.thumb_url }} />
+    renderItem = ({ index, item }) => (
+        <TouchableHighlight
+            style={styles.imageContainer}
+            onPress={() => this.props.navigation.navigate("List", {
+                videos: this.state.videos,
+                index: index,
+                title: this.state.title,
+                paging: this.state.paging
+            })}
+            // onLongPress={() => { console.log("long press", index) }}
+            underlayColor="#de1623"
+        >
+            <Image
+                style={styles.image}
+                resizeMode="cover"
+                source={
+                    { uri: item.thumb_url }} />
 
-            </TouchableHighlight >
-        )
-    }
+        </TouchableHighlight >
+    )
 
     render() {
         return (
@@ -191,26 +234,29 @@ export default class CollectionScreen extends Component {
                         refreshing={this.state.isRefreshing}
                         onRefresh={this.getCollectionVideo}
                         showsVerticalScrollIndicator={false}
+                        ListFooterComponent={() => {
+                            if (this.state.hasNext) {
+                                return (
+                                    <View
+                                        style={{
+                                            padding: 10,
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                        }}>
+                                        <ActivityIndicator
+                                            size="large"
+                                            color={colors.primary}
+                                            style={{ margin: 10 }}
+                                        />
+                                    </View>
+                                )
+                            } else {
+                                return null
+                            }
+                        }}
                         showsHorizontalScrollIndicator={false}
-                        renderItem={({ index, item }) => (
-                            <TouchableHighlight
-                                style={styles.imageContainer}
-                                onPress={() => this.props.navigation.navigate("List", {
-                                    videos: JSON.stringify(this.state.videos),
-                                    index: index,
-                                    title: this.state.title
-                                })}
-                                onLongPress={() => { console.log("long press", index) }}
-                                underlayColor="#de1623"
-                            >
-                                <Image
-                                    style={styles.image}
-                                    resizeMode="cover"
-                                    source={
-                                        { uri: item.thumb_url }} />
-
-                            </TouchableHighlight >
-                        )}
+                        onEndReached={this.loadMore}
+                        renderItem={this.renderItem}
                         keyExtractor={item => item.video_id}
                     />
                 </LoadingView>

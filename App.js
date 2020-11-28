@@ -20,7 +20,9 @@ import {
     WatchedVideosScreen,
     LikedVideosScreen,
     SearchScreen,
-    MenuScreen
+    MenuScreen,
+    FullScreenVideo,
+    ListScreen
 } from "@screens";
 import HomeScreen from "./src/screens/HomeScreen";
 
@@ -43,6 +45,7 @@ const BookmarkStack = createStackNavigator(
     {
         Bookmark: BookmarkScreen,
         Collection: CollectionScreen,
+        List: ListScreen,
     },
     {
         initialRouteName: "Bookmark",
@@ -145,6 +148,17 @@ const TabNavigator = createMaterialBottomTabNavigator({
 });
 
 
+const GeneralStack = createStackNavigator(
+    {
+        Home: TabNavigator,
+        FullScreen: FullScreenVideo
+    },
+    {
+        initialRouteName: "Home",
+        defaultNavigationOptions: navigationOptions
+    }
+)
+
 const AuthStack = createStackNavigator(
     {
         LoginScreen,
@@ -159,8 +173,8 @@ export default createAppContainer(
         {
             Splash: SplashScreen,
             Auth: AuthStack,
-            Home: TabNavigator,
-            Test: TestScreen
+            Home: GeneralStack,
+            Test: TestScreen,
         },
         {
             initialRouteName: 'Splash',

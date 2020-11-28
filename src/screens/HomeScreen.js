@@ -23,16 +23,95 @@ export default class HomeScreen extends Component {
             isRefreshing: true,
             selected_category_index: null,
             categories: [],
-            recent: [],
-            featured: [],
+            videos: [],
+            isLoadingMore: false,
+            hasNext: true,
+            paging: {}
         }
 
         this.getCategories = this.getCategories.bind(this);
         this.getFeed = this.getFeed.bind(this);
         this.onSearchFocus = this.onSearchFocus.bind(this)
         this.onCategoryPressed = this.onCategoryPressed.bind(this)
+        this.loadMore = this.loadMore.bind(this);
     }
 
+
+    loadMore() {
+        let selected_category_index = this.state.selected_category_index;
+
+        if (!this.state.isLoadingMore) {
+            if ("next" in this.state.paging) {
+                this.setState({
+                    isLoadingMore: true
+                })
+
+                if (selected_category_index == null) {
+                    api.getFeed(this.state.paging.next).then(data => {
+
+                        let videos = [];
+                        if (data.status == 'error') {
+                            Snackbar.show({
+                                text: 'Cannot show feed. Try again later.',
+                            });
+                        } else {
+                            videos = data.data
+                        }
+
+                        //let videosArray = this.state.videos;
+                        //videosArray.push(videos);
+                        let arr = this.state.videos.slice();
+                        arr = arr.concat(videos)
+
+
+
+                        this.setState({
+                            videos: arr,
+                            paging: data.paging,
+                            isLoadingMore: false,
+                            hasNext: "next" in data.paging
+                        })
+                    }).catch(() => {
+                        Snackbar.show({
+                            text: 'Cannot show collections. Try again later.',
+                        });
+
+                    });
+                } else {
+                    api.getCategoryVideos(this.state.categories[selected_category_index].category_id, this.state.paging.next).then(data => {
+                        let videos = [];
+                        if (data.status == 'error') {
+                            Snackbar.show({
+                                text: 'Cannot show feed. Try again later.',
+                            });
+                        } else {
+                            videos = data.data
+                        }
+                        //let videosArray = this.state.videos;
+                        //videosArray.push(videos);
+                        let arr = this.state.videos.slice();
+                        arr = arr.concat(videos)
+
+
+
+                        this.setState({
+                            videos: arr,
+                            paging: data.paging,
+                            isLoadingMore: false,
+                            hasNext: "next" in data.paging
+                        })
+                    }).catch(() => {
+                        Snackbar.show({
+                            text: 'Cannot show collections. Try again later.',
+                        });
+
+                    });
+                }
+            }
+        }
+
+
+    }
 
 
 
@@ -128,18 +207,22 @@ export default class HomeScreen extends Component {
 
         if (selected_category_index == null) {
             api.getFeed().then(data => {
-                let recent = this.state.recent;
+                let videos = this.state.videos;
                 if (data.status == 'error') {
                     Snackbar.show({
                         text: 'Cannot show feed. Try again later.',
                     });
                 } else {
-                    recent = data.data.recent
+                    videos = data.data
                 }
+
                 this.setState({
-                    recent: recent,
+                    videos: videos,
                     isRefreshing: false,
-                    isLoading: false
+                    isLoading: false,
+                    paging: data.paging,
+                    isLoadingMore: false,
+                    hasNext: "next" in data.paging
                 });
             }).catch(() => {
                 Snackbar.show({
@@ -151,20 +234,22 @@ export default class HomeScreen extends Component {
             });
         } else {
 
-
             api.getCategoryVideos(this.state.categories[selected_category_index].category_id).then(data => {
-                let recent = this.state.recent;
+                let videos = this.state.videos;
                 if (data.status == 'error') {
                     Snackbar.show({
                         text: 'Cannot show feed. Try again later.',
                     });
                 } else {
-                    recent = data.data
+                    videos = data.data
                 }
                 this.setState({
-                    recent: recent,
+                    videos: videos,
                     isRefreshing: false,
                     isLoading: false,
+                    paging: data.paging,
+                    isLoadingMore: false,
+                    hasNext: "next" in data.paging
                 });
             }).catch(() => {
                 Snackbar.show({
@@ -223,9 +308,12 @@ export default class HomeScreen extends Component {
                     isLoading={this.state.isLoading}
                 >
                     <VideoListView
-                        videos={this.state.recent}
+                        videos={this.state.videos}
+                        navigation={this.props.navigation}
                         isLoading={this.state.isRefreshing}
                         onRefresh={() => this.getFeed(this.state.selected_category_index)}
+                        hasNext={this.state.hasNext}
+                        onEndReached={this.loadMore}
                     />
 
                 </LoadingView>

@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { StyleSheet, SafeAreaView, FlatList, Platform, View, Modal, TouchableWithoutFeedback, Text, TextInput, TouchableHighlight, Image } from 'react-native'
+import { StyleSheet, SafeAreaView, FlatList, AppState, View, Modal, TouchableWithoutFeedback, Text, TextInput, TouchableHighlight, Image, ActivityIndicator } from 'react-native'
 import VideoContent from "./VideoContent"
 import { ButtonImage, Dialog, Button } from "@component/views"
 import { colors, constants, images } from "@config"
@@ -25,31 +25,114 @@ export default class VideoListView extends Component {
             addToNewCollection: false,
             showCollections: false,
             lastSaveVideoId: 0,
+            appState: AppState.currentState,
+            lastPlay: {
+                index: -1,
+                viewable: true
+            },
             collections: []
         }
+
+
+        this.viewabilityConfig = {
+            itemVisiblePercentThreshold: 50,
+        }
+
 
         this.onPlay = this.onPlay.bind(this);
         this.onLikePressed = this.onLikePressed.bind(this);
         this.onBookmarkPress = this.onBookmarkPress.bind(this);
-        this.onSearchFocus = this.onSearchFocus.bind(this)
         this.onViewableItemsChanged = this.onViewableItemsChanged.bind(this)
         this.onShowCollection = this.onShowCollection.bind(this);
         this.addVideoToCollection = this.addVideoToCollection.bind(this);
         this.createCollection = this.createCollection.bind(this);
+        this.onFocus = this.onFocus.bind(this);
+        this.onBlur = this.onBlur.bind(this);
+        this.onFullScreenPress = this.onFullScreenPress.bind(this);
 
     }
 
+    onFocus() {
+        let lastPlay = this.state.lastPlay;
+
+        if (lastPlay.viewable) {
+            this.onPlay(lastPlay.index, "resume")
+        }
+    }
+
+    onBlur() {
+        this.onPlay(this.state.lastPlay.index, "stop")
+    }
+
+    onFullScreenPress(index) {
+
+        let lastPlay = this.state.lastPlay
+
+        lastPlay.index = (lastPlay.index !== index) ? -1 : lastPlay.index
+
+        this.setState({
+            lastPlay
+        }, () => {
+            this.props.navigation.push("FullScreen", {
+                video: this.state.videos[index]
+            })
+        })
+
+
+
+    }
+
+    _handleAppStateChange(nextAppState) {
+        if (
+            this.state.appState.match(/inactive|background/) &&
+            nextAppState === "active"
+        ) {
+            this.onFocus();
+        } else if (this.state.appState === "active" && nextAppState.match(/inactive|background/)) {
+            this.onBlur();
+        }
+        this.setState({ appState: nextAppState });
+    }
+
     componentDidMount() {
+        this.focusListener = this.props.navigation.addListener('willFocus', () => {
+            // do something
+            this.onFocus()
+        });
+
+        this.blurListener = this.props.navigation.addListener('willBlur', () => {
+            // do something
+            this.onBlur()
+        });
+
+        AppState.addEventListener("change", this._handleAppStateChange);
+
+
+
         this.setState({
             videos: this.props.videos
         })
     }
 
+    componentWillUnmount() {
+        AppState.removeEventListener("change", this._handleAppStateChange);
+        this.focusListener.remove();
+        this.blurListener.remove();
+    }
+
 
     componentDidUpdate(prevProps) {
+        /*
+     console.log(prevProps.videos.length, this.props.videos.length)
+      if (prevProps.videos.length !== this.props.videos.length) {
+          console.log("update")
+          this.setState({ videos: this.props.videos })
+      }
+/*     */
         if (prevProps.videos !== this.props.videos) {
             this.setState({ videos: this.props.videos })
         }
+        //*/
     }
 
 
@@ -190,50 +273,65 @@ export default class VideoListView extends Component {
 
     }
 
-    onSearchFocus() {
-        this.props.navigation.navigate("Search")
-        if (Platform.OS == "ios") {
-            this.searchInput.blur();
-        }
-    }
 
-    onPlay(index) {
+    onPlay(index, action = undefined) {
+        if (index !== -1) {
+            this.setState(state => {
 
-        let videos = this.state.videos;
+                let lastPlay = state.lastPlay;
 
+                lastPlay.index = state.videos[index].isPlaying && action !== "stop" ? -1 : index;
 
-        if (!videos[index].is_watched) {
-            api.watchVideo(videos[index].video_id);
+                const videos = state.videos.map((video, j) => {
+                    if (j === index) {
+                        if (!video.is_watched) {
+                            api.watchVideo(video.video_id);
 
-            videos[index].is_watched = true;
-            videos[index].total_watch = parseInt(videos[index].total_watch) + 1
-        }
+                            video.is_watched = true;
+                            video.total_watch = parseInt(video.total_watch) + 1
+                        }
 
+                        video.isPlaying = action === "resume" ? true : (action === "stop" ? false : !video.isPlaying)
+                    } else if (video.isPlaying) (
+                        video.isPlaying = false
+                    )
+                    return video;
+                });
 
-        if (videos[index].isPlaying) {
-            videos[index].isPlaying = false
-        } else {
-            videos.forEach(item => {
-                if (item.isPlaying) {
-                    item.isPlaying = false
-                }
+                return {
+                    videos,
+                    lastPlay
+                };
             });
-            videos[index].isPlaying = true;
+        } else {
+            this.setState(state => {
+                const videos = state.videos.map((video) => {
+                    if (video.isPlaying) (
+                        video.isPlaying = false
+                    )
+                    return video;
+                });
+
+                return {
+                    videos,
+                };
+            });
         }
 
-        this.setState({
-            videos: videos
-        })
     }
+
+
 
     onViewableItemsChanged({ changed }) {
-
+        let lastPlay = this.state.lastPlay;
         changed.forEach(item => {
-            if (this.state.videos[item.index].isPlaying) {
+            if (lastPlay.index === item.index) {
+                lastPlay.viewable = item.isViewable;
                 this.setState({
+                    lastPlay,
                     videos: update(this.state.videos, {
                         [item.index]: {
-                            isPlaying: { $set: false }
+                            isPlaying: { $set: item.isViewable }
                         }
                     })
                 })
@@ -241,6 +339,82 @@ export default class VideoListView extends Component {
         })
 
     }
+
+    renderCollectionitem = ({ index, item }) => (
+        <View
+            style={{ alignItems: "center" }}
+        >
+            <TouchableHighlight
+                style={[styles.imageContainer, { marginRight: index == this.state.collections.length - 1 ? 20 : 0 }]}
+                underlayColor="#de1623"
+                onPress={() => { this.addVideoToCollection(item.collection_id) }}
+            >
+                <Image
+                    style={styles.image}
+                    resizeMode="cover"
+                    source={item.poster ?
+                        { uri: item.poster } : images.placeholder} />
+
+            </TouchableHighlight >
+            <Text
+                style={{ fontSize: constants.fonts.xxsmall }}>
+                {item.title}
+            </Text>
+            <Text
+                style={{ fontSize: constants.fonts.mini, color: colors.primary }}>
+                {item.total_videos} videos
+            </Text>
+
+
+        </View>
+
+    )
+
+    renderFooter = () => {
+        if (this.props.hasNext) {
+            return (
+                <View
+                    style={{
+                        padding: 10,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}>
+                    <ActivityIndicator
+                        size="large"
+                        color={colors.primary}
+                        style={{ margin: 10 }}
+                    />
+                </View>
+            )
+        } else {
+            return null
+        }
+    }
+
+    renderVideoItem = ({ index, item }) => (
+        <VideoContent
+            id={item.video_id}
+            video={item.video_url}
+            poster={item.thumb_url}
+            paused={!item.isPlaying}
+            likeCount={item.total_like}
+            watchCount={item.total_watch}
+            duration={item.duration}
+            onLikePressed={() => this.onLikePressed(index)}
+            onBookmarkPress={() => this.onBookmarkPress(index)}
+            onShowCollection={() => this.onShowCollection(index)}
+            tags={item.tags}
+            height={item.height}
+            onFullScreenPress={() => this.onFullScreenPress(index)}
+            title={item.title}
+            description={item.description}
+            onPressPlayPause={() => this.onPlay(index)}
+            width={item.width}
+            isLiked={item.is_liked}
+            isWatched={item.is_watched}
+            isSaved={item.is_saved}
+        />
+    )
 
 
     render() {
@@ -319,35 +493,7 @@ export default class VideoListView extends Component {
                                         style={{ padding: 10 }}
                                         showsVerticalScrollIndicator={false}
                                         showsHorizontalScrollIndicator={false}
-                                        renderItem={({ index, item }) => (
-                                            <View
-                                                style={{ alignItems: "center" }}
-                                            >
-                                                <TouchableHighlight
-                                                    style={[styles.imageContainer, { marginRight: index == this.state.collections.length - 1 ? 20 : 0 }]}
-                                                    underlayColor="#de1623"
-                                                    onPress={() => { this.addVideoToCollection(item.collection_id) }}
-                                                >
-                                                    <Image
-                                                        style={styles.image}
-                                                        resizeMode="cover"
-                                                        source={item.poster ?
-                                                            { uri: item.poster } : images.placeholder} />
-
-                                                </TouchableHighlight >
-                                                <Text
-                                                    style={{ fontSize: constants.fonts.xxsmall }}>
-                                                    {item.title}
-                                                </Text>
-                                                <Text
-                                                    style={{ fontSize: constants.fonts.mini, color: colors.primary }}>
-                                                    {item.total_videos} videos
-                                                </Text>
-
-
-                                            </View>
-
-                                        )}
+                                        renderItem={this.renderCollectionitem}
                                         keyExtractor={item => item.collection_id}
                                     />
 
@@ -367,29 +513,11 @@ export default class VideoListView extends Component {
                     onViewableItemsChanged={this.onViewableItemsChanged}
                     refreshing={this.props.isLoading}
                     removeClippedSubviews={true}
-                    renderItem={({ index, item }) => (
-                        <VideoContent
-                            id={item.video_id}
-                            video={item.video_url}
-                            poster={item.thumb_url}
-                            paused={!item.isPlaying}
-                            likeCount={item.total_like}
-                            watchCount={item.total_watch}
-                            duration={item.duration}
-                            onLikePressed={() => this.onLikePressed(index)}
-                            onBookmarkPress={() => this.onBookmarkPress(index)}
-                            onShowCollection={() => this.onShowCollection(index)}
-                            tags={item.tags}
-                            height={item.height}
-                            title={item.title}
-                            description={item.description}
-                            onPress={() => this.onPlay(index)}
-                            width={item.width}
-                            isLiked={item.is_liked}
-                            isWatched={item.is_watched}
-                            isSaved={item.is_saved}
-                        />
-                    )}
+                    ListFooterComponent={this.renderFooter}
+                    onEndReached={this.props.onEndReached}
+                    onEndReachedThreshold={0.5}
+                    viewabilityConfig={this.viewabilityConfig}
+                    renderItem={this.renderVideoItem}
                     keyExtractor={item => item.video_id}
                 />
 

@@ -16,12 +16,66 @@ export default class SearchScreen extends Component {
         super(props);
 
         this.state = {
-            movies: [],
+            videos: [],
             isLoading: false,
+            isLoadingMore: false,
+            keyword: "",
+            hasNext: false,
+            paging: {}
         };
 
         this.search = this.search.bind(this);
+        this.loadMore = this.loadMore.bind(this);
     }
+
+
+    loadMore() {
+        if (!this.state.isLoadingMore) {
+            if ("next" in this.state.paging) {
+                this.setState({
+                    isLoadingMore: true
+                })
+
+                api.searchVideos(this.state.keyword, this.state.paging.next).then(data => {
+
+                    let videos = [];
+
+
+                    if (data.status == 'error') {
+                        Snackbar.show({
+                            text: 'Cannot show search results. Try again later.',
+                        });
+                    } else {
+                        videos = data.data
+                    }
+
+                    //let videosArray = this.state.videos;
+                    //videosArray.push(videos);
+                    let arr = this.state.videos.slice();
+                    arr = arr.concat(videos)
+
+
+                    this.setState({
+                        videos: arr,
+                        paging: data.paging,
+                        isLoadingMore: false,
+                        hasNext: "next" in data.paging
+                    })
+
+
+                }).catch((err) => {
+                    console.log(err)
+                    Snackbar.show({
+                        text: 'Cannot show search results. Try again later.',
+                    });
+
+                });
+            }
+        }
+
+    }
+
+
 
 
     search(event) {
@@ -29,24 +83,28 @@ export default class SearchScreen extends Component {
         let text = event.nativeEvent.text;
 
         this.setState({
-            isLoading: true
+            isLoading: true,
+            keyword: text
         });
 
         if (text !== "") {
-            console.log(text)
             api.searchVideos(text).then(data => {
-                let movies = this.state.movies;
+                let videos = this.state.videos;
                 if (data.status == 'error') {
                     Snackbar.show({
                         text: 'Search not working. Try again later.',
                     });
                 } else {
-                    movies = data.data.videos;
+                    videos = data.data;
                 }
 
+                console.log(data.paging)
+
                 this.setState({
-                    movies: movies,
-                    isLoading: false
+                    videos: videos,
+                    isLoading: false,
+                    paging: data.paging,
+                    hasNext: "next" in data.paging
                 });
             })
                 .catch(() => {
@@ -57,11 +115,12 @@ export default class SearchScreen extends Component {
                         isLoading: false
                     })
                 });
-        }
-        {
+        } else {
             this.setState({
-                movies: [],
-                isLoading: false
+                videos: [],
+                isLoading: false,
+                hasNext: false,
+                paging: {}
             });
         }
     }
@@ -95,7 +154,11 @@ export default class SearchScreen extends Component {
                     isLoading={this.state.isLoading}
                 >
                     <VideoListView
-                        videos={this.state.movies}
+                        videos={this.state.videos}
+                        onRefresh={this.getWatchedVideos}
+                        hasNext={this.state.hasNext}
+                        navigation={this.props.navigation}
+                        onEndReached={this.loadMore}
                     />
 
                 </LoadingView>

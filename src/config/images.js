@@ -34,12 +34,14 @@ const images = {
   add: require("@assets/images/add.png"),
   addWhite: require("@assets/images/addWhite.png"),
   mobile: require("@assets/images/mobile.png"),
+  pause: require("@assets/images/pause.png"),
   back: require("@assets/images/back.png"),
   placeholder: require("@assets/images/placeholder.png"),
   delete: require("@assets/images/delete.png"),
   chevronRight: require("@assets/images/chevron_right.png"),
   account: require("@assets/images/account.png"),
   video: require("@assets/images/videos.png"),
+  fullscreen: require("@assets/images/fullscreen.png")
 };
 
 export default images;

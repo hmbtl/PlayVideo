@@ -232,6 +232,7 @@ export default class RegisterScreen extends Component {
                                 label="password"
                                 style={styles.inputText}
                                 secureTextEntry={true}
+                                blurOnSubmit={false}
                                 onChangeText={(text) => this.onChangeField("password", text)}
                                 value={this.state.fields["password"]}
                                 error={this.state.errors["password"]}

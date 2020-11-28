@@ -16,7 +16,8 @@ export default class BookmarkScreen extends Component {
         this.state = {
             collections: [],
             isLoading: true,
-            loadingCollection: false,
+            loadingCollection: true,
+            isRefreshing: true,
             showModal: false,
             collectionTitle: "",
             addButtonLoading: false
@@ -69,10 +70,12 @@ export default class BookmarkScreen extends Component {
         });
     }
 
-    getCollections() {
+    getCollections(isFirst = false) {
+
 
         this.setState({
-            loadingCollection: true
+            isRefreshing: true,
+            loadingCollection: isFirst
         })
 
         api.getCollections().then(data => {
@@ -89,6 +92,7 @@ export default class BookmarkScreen extends Component {
 
             this.setState({
                 loadingCollection: false,
+                isRefreshing: false,
                 collections: collections
             })
 
@@ -98,7 +102,7 @@ export default class BookmarkScreen extends Component {
             });
 
             this.setState({
-                loadingCollection: false
+                isRefreshing: false
             })
         });
     }
@@ -106,7 +110,7 @@ export default class BookmarkScreen extends Component {
     componentDidMount() {
         this.focusListener = this.props.navigation.addListener('willFocus', () => {
             // do something
-            this.getCollections();
+            this.getCollections(true);
         });
     }
 
@@ -174,7 +178,7 @@ export default class BookmarkScreen extends Component {
                         data={this.state.collections}
                         horizontal={false}
                         numColumns={2}
-                        refreshing={this.state.loadingCollection}
+                        refreshing={this.state.isRefreshing}
                         onRefresh={this.getCollections}
                         showsVerticalScrollIndicator={false}
                         style={{ paddingLeft: 10, paddingRight: 10, paddingBottom: 30 }}

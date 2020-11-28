@@ -10,6 +10,8 @@ import MenuScreen from "./MenuScreen"
 import CollectionScreen from "./CollectionScreen"
 import WatchedVideosScreen from "./WatchedVideosScreen"
 import LikedVideosScreen from "./LikedVideosScreen"
+import FullScreenVideo from './FullScreenVideo'
+import ListScreen from "./ListScreen"
 
 export {
   SplashScreen,
@@ -23,5 +25,7 @@ export {
   MenuScreen,
   CollectionScreen,
   WatchedVideosScreen,
-  LikedVideosScreen
+  LikedVideosScreen,
+  FullScreenVideo,
+  ListScreen
 };

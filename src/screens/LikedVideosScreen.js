@@ -19,31 +19,66 @@ export default class LikedVideosScreen extends Component {
             videos: [],
             isLoading: true,
             isRefreshing: true,
-
+            isLoadingMore: false,
+            hasNext: false,
+            paging: {}
         }
 
         this.getLikedVideos = this.getLikedVideos.bind(this)
+        this.loadMore = this.loadMore.bind(this);
     }
 
+
+    loadMore() {
+        if (!this.state.isLoadingMore) {
+            if ("next" in this.state.paging) {
+                this.setState({
+                    isLoadingMore: true
+                })
+
+                api.getLikedVideos(this.state.paging.next).then(data => {
+
+                    let videos = [];
+
+                    if (data.status == 'error') {
+                        Snackbar.show({
+                            text: 'Cannot show liked videos. Try again later.',
+                        });
+                    } else {
+                        videos = data.data
+                    }
+
+                    //let videosArray = this.state.videos;
+                    //videosArray.push(videos);
+                    let arr = this.state.videos.slice();
+                    arr = arr.concat(videos)
+
+
+
+                    this.setState({
+                        videos: arr,
+                        paging: data.paging,
+                        isLoadingMore: false,
+                        hasNext: "next" in data.paging
+                    })
+
+
+                }).catch(() => {
+                    Snackbar.show({
+                        text: 'Cannot show liked videos. Try again later.',
+                    });
+
+                });
+            }
+        }
+
+
+    }
 
     componentDidMount() {
         this.getLikedVideos()
     }
 
-    onViewableItemsChanged({ changed }) {
-
-        changed.forEach(item => {
-            if (this.state.videos[item.index].isPlaying) {
-                this.setState({
-                    videos: update(this.state.videos, {
-                        [item.index]: {
-                            isPlaying: { $set: false }
-                        }
-                    })
-                })
-            }
-        })
-    }
 
 
     getLikedVideos() {
@@ -67,7 +102,9 @@ export default class LikedVideosScreen extends Component {
             this.setState({
                 isRefreshing: false,
                 isLoading: false,
-                videos: videos
+                videos: videos,
+                paging: data.paging,
+                hasNext: "next" in data.paging,
             })
 
 
@@ -95,7 +132,7 @@ export default class LikedVideosScreen extends Component {
                     />
                     <View style={styles.headerTitle}>
 
-                        <TextHeader textStyle={{ fontSize: constants.fonts.medium }} style={{ marginLeft: 5 }} color={colors.textBlack}>Watched videos</TextHeader>
+                        <TextHeader textStyle={{ fontSize: constants.fonts.medium }} style={{ marginLeft: 5 }} color={colors.textBlack}>Liked videos</TextHeader>
 
                     </View>
                 </View>
@@ -108,7 +145,10 @@ export default class LikedVideosScreen extends Component {
                     <VideoListView
                         videos={this.state.videos}
                         isLoading={this.state.isRefreshing}
+                        navigation={this.props.navigation}
                         onRefresh={this.getLikedVideos}
+                        hasNext={this.state.hasNext}
+                        onEndReached={this.loadMore}
                     />
                 </LoadingView>
 

@@ -19,10 +19,63 @@ export default class WatchedVideosScreen extends Component {
             videos: [],
             isLoading: true,
             isRefreshing: true,
+            isLoadingMore: false,
+            hasNext: true,
+            paging: {}
 
         }
 
         this.getWatchedVideos = this.getWatchedVideos.bind(this)
+        this.loadMore = this.loadMore.bind(this);
+
+    }
+
+
+
+    loadMore() {
+        if (!this.state.isLoadingMore) {
+            if ("next" in this.state.paging) {
+                this.setState({
+                    isLoadingMore: true
+                })
+
+                api.getRecentVideos(this.state.paging.next).then(data => {
+
+                    let videos = [];
+
+                    if (data.status == 'error') {
+                        Snackbar.show({
+                            text: 'Cannot show liked videos. Try again later.',
+                        });
+                    } else {
+                        videos = data.data
+                    }
+
+                    //let videosArray = this.state.videos;
+                    //videosArray.push(videos);
+                    let arr = this.state.videos.slice();
+                    arr = arr.concat(videos)
+
+
+
+                    this.setState({
+                        videos: arr,
+                        paging: data.paging,
+                        isLoadingMore: false,
+                        hasNext: "next" in data.paging
+                    })
+
+
+                }).catch(() => {
+                    Snackbar.show({
+                        text: 'Cannot show liked videos. Try again later.',
+                    });
+
+                });
+            }
+        }
+
+
     }
 
 
@@ -64,7 +117,8 @@ export default class WatchedVideosScreen extends Component {
             this.setState({
                 isLoading: false,
                 isRefreshing: false,
-                videos: videos
+                videos: videos,
+                paging: data.paging
             })
 
 
@@ -107,6 +161,9 @@ export default class WatchedVideosScreen extends Component {
                         videos={this.state.videos}
                         isLoading={this.state.isRefreshing}
                         onRefresh={this.getWatchedVideos}
+                        hasNext={this.state.hasNext}
+                        navigation={this.props.navigation}
+                        onEndReached={this.loadMore}
                     />
                 </LoadingView>
 

@@ -1,10 +1,9 @@
 import React, { PureComponent } from "react";
-import { StyleSheet, Dimensions, Image, TouchableHighlight, Text, View, ActivityIndicator } from "react-native";
+import { StyleSheet, Dimensions, Image, TouchableOpacity, Text, View, ActivityIndicator, TouchableHighlight, Animated } from "react-native";
 import Video from "react-native-video";
 import FastImage from "react-native-fast-image"
 import { utils, images, constants, colors } from "@config";
 import { moderateScale } from "react-native-size-matters"
-
 
 export default class Media extends PureComponent {
 
@@ -14,11 +13,14 @@ export default class Media extends PureComponent {
             started: false,
             duration: this.props.duration,
             isLoading: false,
+            showControls: true,
+            opacity: new Animated.Value(1),
             status: "stopped"
         }
         this.onReadyForDisplay = this.onReadyForDisplay.bind(this);
         this.onLoadStart = this.onLoadStart.bind(this);
         this.onProgress = this.onProgress.bind(this);
+        this.toggleControls = this.toggleControls.bind(this);
     }
 
 
@@ -55,6 +57,34 @@ export default class Media extends PureComponent {
         }
     }
 
+    toggleControls(isClick = true) {
+        // console.log("toggle", this.state.status, this.props.paused)
+        if (this.state.status === "started") {
+            const { showControls } = this.state
+            Animated.timing(this.state.opacity, {
+                toValue: showControls ? 0 : 1,
+                duration: isClick ? 300 : 1000,
+                useNativeDriver: true
+            }).start(() => {
+                this.setState({ showControls: !this.state.showControls });//set the new state, so the next click will have different value
+            })
+        } else {
+            this.props.onPressPlayPause();
+        }
+
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+
+
+        if (prevState.status === "loading" && this.state.status === "started") {
+            this.toggleControls(false)
+        } else if (this.state.status === "started" && !this.props.paused && prevProps.paused) {
+            this.toggleControls(false)
+        } else if (this.state.status === "started" && this.props.paused && !prevProps.paused && !this.state.showControls) {
+            this.toggleControls(true)
+        }
+    }
 
     onProgress(time) {
         this.setState({
@@ -67,8 +97,7 @@ export default class Media extends PureComponent {
     }
 
     render() {
-        if (this.state.status !== "stopped")
-            console.log(this.props.poster, this.state.status);
+        //console.log("state", this.state.status, this.props.paused)
         const screenWidth = Dimensions.get("window").width;
         const {
             style,
@@ -77,7 +106,8 @@ export default class Media extends PureComponent {
             width = screenWidth,
             poster,
             video,
-            onPress,
+            onPressPlayPause,
+            onFullScreenPress,
             ...props } = this.props;
 
         const heightScaled = height * (screenWidth / width);
@@ -114,7 +144,7 @@ export default class Media extends PureComponent {
 
 
 
-        let pauseImage, component;
+        let pauseImage, component, controls;
 
 
         if (this.state.status == "stopped" && this.props.paused) {
@@ -146,18 +176,45 @@ export default class Media extends PureComponent {
 
         if (this.state.status == "started" && !this.props.paused) {
             component = videoComponent;
+            pauseImage = <Image style={styles.image} source={images.pause} />
         }
+
+        if (pauseImage !== undefined) {
+            pauseImage = (
+                <TouchableOpacity
+                    style={{ position: "absolute", left: "50%", marginLeft: -15, top: "50%", marginTop: -15 }}
+                    onPress={onPressPlayPause}
+                    disabled={!this.state.showControls}
+                >
+                    {pauseImage}
+                </TouchableOpacity>
+            )
+        }
+
+        controls = (
+            <Animated.View style={{ position: "absolute", width: "100%", height: "100%", opacity: this.state.opacity }}>
+                {pauseImage}
+                {this.state.status === "started" &&
+                    <TouchableOpacity
+                        style={{ right: 0, bottom: 0, position: "absolute", marginRight: 15, marginBottom: 15 }}
+                        onPress={onFullScreenPress}
+                    >
+                        <Image style={styles.image} source={images.fullscreen} />
+                    </TouchableOpacity>
+                }
+            </Animated.View>
+        )
 
         return (
 
             <TouchableHighlight
-                style={[styles.container, localStyle, style]}
-                onPress={onPress}
+                style={[styles.container, localStyle, style,]}
+                onPress={this.toggleControls}
             >
                 <View style={styles.mediaContainer}>
                     {component}
                     <Text style={styles.duration}>{utils.secondsToClock(this.state.duration)}</Text>
-                    {pauseImage}
+                    {controls}
                 </View>
 
             </TouchableHighlight>
@@ -180,8 +237,8 @@ const styles = StyleSheet.create({
         padding: moderateScale(5),
         margin: moderateScale(0),
     },
+
     image: {
-        position: "absolute"
     },
     mediaContainer: {
         alignItems: "center",

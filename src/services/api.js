@@ -14,6 +14,7 @@ const login = (email, password) => {
     body: params,
   }).then(response => response.json());
 };
+
 const register = (email, password, name) => {
   let params = new FormData();
   params.append('email', email);
@@ -63,7 +64,6 @@ const updateUser = async (name) => {
     body: formData.toString(),
   }).then(response => response.json());
 }
-
 
 const getUser = async () => {
   let token = await AsyncStorage.getItem('USER_TOKEN');
@@ -129,10 +129,16 @@ const addVideoToCollection = async (collectionId, videoId) => {
   }).then(response => response.json());
 }
 
-const getFeed = async () => {
+const getFeed = async (nextURL = undefined) => {
   let token = await AsyncStorage.getItem('USER_TOKEN');
 
-  return fetch(API_URL + '/feed', {
+  let URL = API_URL + '/feed?limit=10';
+
+  if (nextURL) {
+    URL = nextURL;
+  }
+
+  return fetch(URL, {
     method: 'GET',
     headers: {
       Authorization: token,
@@ -177,10 +183,16 @@ const watchVideo = async (videoId) => {
   }).then(response => response.json());
 }
 
-const getRecentVideos = async () => {
+const getRecentVideos = async (nextURL = undefined) => {
   let token = await AsyncStorage.getItem('USER_TOKEN');
 
-  return fetch(API_URL + '/videos/recent', {
+  let URL = API_URL + '/videos/recent?limit=10';
+
+  if (nextURL) {
+    URL = nextURL;
+  }
+
+  return fetch(URL, {
     method: 'GET',
     headers: {
       Authorization: token,
@@ -189,10 +201,16 @@ const getRecentVideos = async () => {
   }).then(response => response.json());
 }
 
-const getLikedVideos = async () => {
+const getLikedVideos = async (nextURL = undefined) => {
   let token = await AsyncStorage.getItem('USER_TOKEN');
 
-  return fetch(API_URL + '/videos/liked', {
+  let URL = API_URL + '/videos/liked?limit=10';
+
+  if (nextURL) {
+    URL = nextURL;
+  }
+
+  return fetch(URL, {
     method: 'GET',
     headers: {
       Authorization: token,
@@ -201,10 +219,16 @@ const getLikedVideos = async () => {
   }).then(response => response.json());
 }
 
-const searchVideos = async (keyword) => {
+const searchVideos = async (keyword, nextURL = undefined) => {
   let token = await AsyncStorage.getItem('USER_TOKEN');
 
-  return fetch(API_URL + '/videos/search?q=' + keyword, {
+  let URL = API_URL + '/videos/search?limit=10&q=' + keyword;
+
+  if (nextURL) {
+    URL = nextURL;
+  }
+
+  return fetch(URL, {
     method: 'GET',
     headers: {
       Authorization: token,
@@ -253,10 +277,16 @@ const deleteVideoFromCollection = async (videoId) => {
   }).then(response => response.json());
 }
 
-const getCollectionVideo = async (collectionId) => {
+const getCollectionVideo = async (collectionId, nextURL = undefined) => {
   let token = await AsyncStorage.getItem('USER_TOKEN');
 
-  return fetch(API_URL + '/collection/' + collectionId + '/video', {
+  let URL = API_URL + '/collection/' + collectionId + "/video?limit=12" ;
+
+  if (nextURL) {
+    URL = nextURL;
+  }
+
+  return fetch(URL, {
     method: 'GET',
     headers: {
       Authorization: token,
@@ -277,10 +307,16 @@ const getCategories = async () => {
   }).then(response => response.json());
 }
 
-const getCategoryVideos = async (categoryId) => {
+const getCategoryVideos = async (categoryId, nextURL = undefined) => {
   let token = await AsyncStorage.getItem('USER_TOKEN');
 
-  return fetch(API_URL + '/category/' + categoryId + "/video", {
+  let URL = API_URL + '/category/' + categoryId + "/video?limit=10" ;
+
+  if (nextURL) {
+    URL = nextURL;
+  }
+
+  return fetch(URL, {
     method: 'GET',
     headers: {
       Authorization: token,

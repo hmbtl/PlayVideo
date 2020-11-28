@@ -113,10 +113,12 @@ export default class VideoContent extends PureComponent {
                             video={this.props.video}
                             poster={this.props.poster}
                             paused={this.props.paused}
+                            id={this.props.id}
                             duration={this.props.duration}
                             height={this.props.height}
                             width={this.props.width}
-                            onPress={this.props.onPress}
+                            onPressPlayPause={this.props.onPressPlayPause}
+                            onFullScreenPress={this.props.onFullScreenPress}
                             onProgress={this.props.onProgress}
                             onLoadStart={this.props.onLoadStart}
                             onReadyForDisplay={this.props.onReadyForDisplay}
@@ -218,7 +220,7 @@ export default class VideoContent extends PureComponent {
                     <Text
                         style={styles.description}
                     >
-                        {this.props.video.name}
+                        {this.props.title}{" "}
                         <Text
                             style={{ fontWeight: "normal", fontSize: constants.fonts.xsmall }}
                         ><Text style={styles.title}>{this.props.title}</Text> - {this.props.description}</Text>

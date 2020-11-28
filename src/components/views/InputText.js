@@ -64,6 +64,8 @@ export default class InputText extends PureComponent {
                     value={value}
                     editable={editable}
                     placeholder={label}
+                    textContentType="oneTimeCode"
+
                     placeholderTextColor="transparent"
                     style={{ fontSize: 20, includeFontPadding: false, color: textColor, paddingLeft: 2, paddingVertical:0, margin: 0, borderBottomWidth: 1, borderRadius: 5, borderBottomColor: isFocused ? focusColor : color }}
                     onFocus={this.handleFocus}

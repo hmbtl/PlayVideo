@@ -28,33 +28,56 @@ export default class CollectionItem extends PureComponent {
         return (
             <View style={{ flexDirection: "column" }}>
                 <View style={{ height: width, flexDirection: "row" }}>
-                    <Image
-                        style={[styles.image, { width: width, borderTopLeftRadius: 10, }]}
-                        resizeMode="cover"
-                        source={
-                            posters.length > 0 ? { uri: posters[0] } : images.placeholder}
-                    />
-                    <Image
-                        style={[styles.image, { width: width, borderTopRightRadius: 10 }]}
-                        resizeMode="cover"
-                        source={
-                            posters.length > 1 ? { uri: posters[1] } : images.placeholder}
-                    />
+                    
+                    {posters.length > 0 &&
+                        <Image
+                            style={[styles.image, { width: width, borderTopLeftRadius: 10, }]}
+                            resizeMode="cover"
+                            source={{ uri: posters[0] }}
+                        />}
+                    {posters.length < 1 &&
+                        <View
+                            style={[styles.image, { width: width, borderTopLeftRadius: 10, backgroundColor: colors.disabled }]}
+                        />
+                    }
+                    {posters.length > 1 &&
+                        <Image
+                            style={[styles.image, { width: width, borderTopRightRadius: 10, }]}
+                            resizeMode="cover"
+                            source={{ uri: posters[1] }}
+                        />}
+                    {posters.length < 2 &&
+                        <View
+                            style={[styles.image, { width: width, borderTopRightRadius: 10, backgroundColor: colors.disabled }]}
+                        />
+                    }
                 </View>
 
                 <View style={{ height: width, flexDirection: "row" }}>
-                    <Image
-                        style={[styles.image, { width: width, borderBottomLeftRadius: 10 }]}
-                        resizeMode="cover"
-                        source={
-                            posters.length > 2 ? { uri: posters[2] } : images.placeholder}
-                    />
-                    <Image
-                        style={[styles.image, { width: width, borderBottomRightRadius: 10 }]}
-                        resizeMode="cover"
-                        source={
-                            posters.length > 3 ? { uri: posters[3] } : images.placeholder}
-                    />
+                    {posters.length > 2 &&
+                        <Image
+                            style={[styles.image, { width: width, borderBottomLeftRadius: 10, }]}
+                            resizeMode="cover"
+                            source={{ uri: posters[2] }}
+                        />}
+                    {posters.length < 3 &&
+                        <View
+                            style={[styles.image, { width: width, borderBottomLeftRadius: 10, backgroundColor: colors.disabled }]}
+                        />
+                    }
+
+                    {posters.length > 3 &&
+                        <Image
+                            style={[styles.image, { width: width, borderBottomRightRadius: 10, }]}
+                            resizeMode="cover"
+                            source={{ uri: posters[3] }}
+                        />}
+                    {posters.length < 4 &&
+                        <View
+                            style={[styles.image, { width: width, borderBottomRightRadius: 10, backgroundColor: colors.disabled }]}
+                        />
+                    }
+
                 </View>
             </View>
 
@@ -111,14 +134,14 @@ const styles = StyleSheet.create({
         height: this.width,
         //  width: width,
         borderRadius: 10,
-       /* shadowColor: 'black',
-        shadowOffset: {
-            width: 1,
-            height: 4,
-        },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 1*/
+        /* shadowColor: 'black',
+         shadowOffset: {
+             width: 1,
+             height: 4,
+         },
+         shadowOpacity: 0.2,
+         shadowRadius: 4,
+         elevation: 1*/
     },
     textContainer: {
         padding: moderateScale(5),

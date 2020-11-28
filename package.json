@@ -26,6 +26,7 @@
     "react-native-snackbar": "^2.2.3",
     "react-native-vector-icons": "^6.7.0",
     "react-native-video": "git+https://git@github.com/paddy57/react-native-video-android-cache.git",
+    "react-native-video-controls": "^2.7.1",
     "react-navigation": "^4.4.0",
     "react-navigation-material-bottom-tabs": "^2.3.0",
     "react-navigation-stack": "^2.8.2"

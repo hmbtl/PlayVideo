@@ -144,6 +144,7 @@ export default class LoginScreen extends Component {
                                 label="password"
                                 style={styles.inputText}
                                 secureTextEntry={true}
+                                textContentType="password"
                                 onChangeText={(text) => this.onChangeField("password", text)}
                                 value={this.state.fields["password"]}
                                 error={this.state.errors["password"]}
